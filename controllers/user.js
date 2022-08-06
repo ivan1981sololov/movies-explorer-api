@@ -16,8 +16,7 @@ const getCurrentUser = (req, res, next) => {
     .then((user) => res.send({ email: user.email, name: user.name, _id: user._id }))
     .catch((err) => {
       next(err);
-    })
-    .catch(next);
+    });
 };
 
 const updateProfile = (req, res, next) => {
@@ -48,10 +47,6 @@ const createUser = (req, res, next) => {
     name,
   } = req.body;
 
-  if (!email || !password || !name) {
-    throw new ValidationError('Неккоректно введенны данные');
-  }
-
   User.findOne({ email }).select('+password')
     .then((user) => {
       if (user) {
@@ -65,21 +60,6 @@ const createUser = (req, res, next) => {
       email,
       password: hash,
     }))
-    .then((user) => {
-      const token = jwt.sign({ _id: user._id }, `${NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret'}`, {
-        expiresIn: '7d',
-      });
-      res
-        .cookie('jwt', token, {
-          expires: new Date(Date.now() + 7 * 24 * 3600000),
-          httpOnly: true,
-          sameSite: true,
-        })
-        .send({
-          name: user.name,
-          _id: user._id,
-        });
-    })
     .catch((err) => {
       if (err.name === 'CastError' || err.name === 'ValidationError') {
         next(new ValidationError('Переданы некорректные данные в методы создания пользователя'));
