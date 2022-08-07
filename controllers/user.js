@@ -60,6 +60,7 @@ const createUser = (req, res, next) => {
       email,
       password: hash,
     }))
+    .then((user) => res.send({ name: user.name, email: user.email }))
     .catch((err) => {
       if (err.name === 'CastError' || err.name === 'ValidationError') {
         next(new ValidationError('Переданы некорректные данные в методы создания пользователя'));
@@ -90,10 +91,7 @@ const login = (req, res, next) => {
     });
 };
 
-const logout = (req, res, next) => {
-  res.clearCookie('jwt');
-  next();
-};
+const logout = (req, res) => { res.clearCookie('jwt').send({ message: 'Выход' }); };
 
 module.exports = {
   getCurrentUser,
